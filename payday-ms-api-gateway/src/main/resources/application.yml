@@ -1,0 +1,29 @@
+server:
+  port: ${SERVER_PORT:8765}
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://eureka-service-discovery:8761/eureka
+
+zuul:
+  sensitiveHeaders:
+  host:
+    socket-timeout-millis: 60000
+    connect-timeout-millis: 60000
+  routes:
+    payday-ms-auth:
+      path: /auth/**
+      serviceId: payday-ms-auth
+    payday-ms-stock:
+      path: /stock/**
+      serviceId: payday-ms-stock
+    payday-ms-user:
+      path: /user/**
+      serviceId: payday-ms-user

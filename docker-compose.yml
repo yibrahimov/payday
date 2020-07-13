@@ -1,0 +1,84 @@
+version: "3.7"
+
+services:
+
+  # Messaging queue
+  payday-rabbitmq:
+    image: rabbitmq:management
+    container_name: payday-rabbitmq
+    hostname: payday-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # Core services
+  eureka-service-discovery:
+    container_name: eureka-service-discovery
+    image: eureka-service-discovery:latest
+    expose:
+      - 8761
+    ports:
+      - 8761:8761
+
+  payday-ms-api-gateway:
+    image: shnovruzov/payday-ms-api-gateway:latest
+    container_name: payday-ms-api-gateway
+    hostname: payday-ms-api-gateway
+    ports:
+      - 8080:8765
+    expose:
+      - 8765
+    depends_on:
+      - eureka-service-discovery
+
+  payday-ms-auth:
+    image: shnovruzov/payday-ms-auth:latest
+    container_name: payday-ms-auth
+    hostname: payday-ms-auth
+    ports:
+      - "8001:8001"
+    environment:
+      - SERVER_PORT=8001
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=payday-rabbitmq
+    depends_on:
+      - payday-rabbitmq
+      - eureka-service-discovery
+
+  payday-ms-notification:
+    image: shnovruzov/payday-ms-notification:latest
+    container_name: payday-ms-notification
+    hostname: payday-ms-notification
+    ports:
+      - "8002:8002"
+    environment:
+      - SERVER_PORT=8002
+      - SPRING_RABBITMQ_HOST=payday-rabbitmq
+    depends_on:
+      - payday-rabbitmq
+      - eureka-service-discovery
+
+  payday-ms-stock:
+    image: shnovruzov/payday-ms-stock:latest
+    container_name: payday-ms-stock
+    hostname: payday-ms-stock
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVER_PORT=8000
+      - SPRING_RABBITMQ_HOST=payday-rabbitmq
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - payday-rabbitmq
+      - eureka-service-discovery
+
+  payday-ms-user:
+    image: shnovruzov/payday-ms-user:latest
+    container_name: payday-ms-user
+    hostname: payday-ms-user
+    ports:
+      - "8005:8005"
+    environment:
+      - SERVER_PORT=8005
+    depends_on:
+      - eureka-service-discovery
